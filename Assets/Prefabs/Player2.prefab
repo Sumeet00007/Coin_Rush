@@ -14,6 +14,7 @@ GameObject:
   - component: {fileID: 2047901500795929610}
   - component: {fileID: 3995027790810820105}
   - component: {fileID: -2291389170160425679}
+  - component: {fileID: -7607526670264243964}
   m_Layer: 0
   m_Name: Player2
   m_TagString: Untagged
@@ -159,6 +160,7 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 3995027790810820105}
+  - {fileID: -7607526670264243964}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &3995027790810820105
 MonoBehaviour:
@@ -203,3 +205,21 @@ Rigidbody2D:
   m_SleepingMode: 1
   m_CollisionDetection: 0
   m_Constraints: 0
+--- !u!114 &-7607526670264243964
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6367828959555332627}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d8b3df12b8ae3274f9748e0e31faf3d5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
+  moveSpeed: 5
+  jumpForce: 7
+  groundLayer:
+    serializedVersion: 2
+    m_Bits: 8
+  groundCheckDistance: 1
