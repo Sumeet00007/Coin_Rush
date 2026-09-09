@@ -11,12 +11,11 @@ GameObject:
   - component: {fileID: 6910097611235407453}
   - component: {fileID: 2926327634013502792}
   - component: {fileID: 7068200132640693331}
-  - component: {fileID: 1154830202114673222}
   - component: {fileID: 2047901500795929610}
   - component: {fileID: 3995027790810820105}
-  - component: {fileID: 3701990645591556242}
+  - component: {fileID: -2291389170160425679}
   m_Layer: 0
-  m_Name: Player
+  m_Name: Player1
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -85,7 +84,7 @@ SpriteRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.37686515, g: 1, b: 0, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -141,18 +140,6 @@ BoxCollider2D:
   m_AutoTiling: 0
   m_Size: {x: 1, y: 1}
   m_EdgeRadius: 0
---- !u!114 &1154830202114673222
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 6367828959555332627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f81a509f6ed686b4289c1dfe265dafbf, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::Player
 --- !u!114 &2047901500795929610
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -172,8 +159,6 @@ MonoBehaviour:
   NestedObjects: []
   NetworkedBehaviours:
   - {fileID: 3995027790810820105}
-  - {fileID: 1154830202114673222}
-  - {fileID: 3701990645591556242}
   ForceRemoteRenderTimeframe: 0
 --- !u!114 &3995027790810820105
 MonoBehaviour:
@@ -191,21 +176,30 @@ MonoBehaviour:
   SyncScale: 0
   SyncParent: 1
   _interpolationTarget: {fileID: 0}
---- !u!114 &3701990645591556242
-MonoBehaviour:
+--- !u!50 &-2291389170160425679
+Rigidbody2D:
+  serializedVersion: 5
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6367828959555332627}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f6bc6d0c2f02ca746a040daf9d0fde15, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::PlayerMovement
-  moveSpeed: 5
-  jumpForce: 8
-  groundLayer:
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
     serializedVersion: 2
-    m_Bits: 8
-  groundCheckDistance: 0.7
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
