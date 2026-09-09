@@ -149,13 +149,9 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
 
         Debug.Log("Starting Match...");
 
-        SceneRef matchScene =
-            SceneRef.FromIndex(2);
+        SceneRef matchScene = SceneRef.FromIndex(2);
 
-        runner.LoadScene(
-            matchScene,
-            UnityEngine.SceneManagement.LoadSceneMode.Single
-        );
+        runner.LoadScene(matchScene,UnityEngine.SceneManagement.LoadSceneMode.Single);
     }
 
     // --------------------------------------------------
