@@ -14,21 +14,43 @@ public class PlayerMovement : NetworkBehaviour
     [SerializeField] private LayerMask groundLayer;
     [SerializeField] private float groundCheckDistance = 1.0f;
 
+    [Header("Animation")]
+    [SerializeField] private Animator animator;
+    [SerializeField] private SpriteRenderer spriteRenderer;
+
+
     private Rigidbody2D rb;
+
+
+    [Networked]
+    private NetworkBool IsRunning { get; set; }
+
+    [Networked]
+    private NetworkBool IsJumping { get; set; }
+
+    [Networked]
+    private NetworkBool FacingLeft { get; set; }
 
     private void Awake()
     {
         rb = GetComponent<Rigidbody2D>();
+
+        if (animator == null)
+        {
+            animator = GetComponent<Animator>();
+        }
+
+        if (spriteRenderer == null)
+        {
+            spriteRenderer = GetComponent<SpriteRenderer>();
+        }
+
     }
 
     public override void FixedUpdateNetwork()
     {
         if (!GetInput(out NetworkInputData input))
             return;
-
-        // =========================================
-        // MOVEMENT
-        // =========================================
 
         Vector2 moveInput = input.MoveInput;
 
@@ -37,14 +59,27 @@ public class PlayerMovement : NetworkBehaviour
             rb.linearVelocity.y
         );
 
-        // =========================================
-        // JUMP
-        // =========================================
+        IsRunning = Mathf.Abs(moveInput.x) > 0.01f;
 
-        if (input.Buttons.IsSet(PlayerInputButton.Jump)
-            && CheckGround())
+        if (moveInput.x < 0)
+        {
+            FacingLeft = true;
+        }
+        else if (moveInput.x > 0)
+        {
+            FacingLeft = false;
+        }
+
+        bool isGrounded = CheckGround();
+
+        if (input.Buttons.IsSet(PlayerInputButton.Jump) && isGrounded)
         {
             Jump();
+            IsJumping = true;
+        }
+        else
+        {
+            IsJumping = !isGrounded;
         }
     }
 
@@ -67,6 +102,36 @@ public class PlayerMovement : NetworkBehaviour
 
         return hit.collider != null;
     }
+
+    public override void Render()
+    {
+        UpdateAnimation();
+        UpdateSpriteFlip();
+    }
+
+    private void UpdateAnimation()
+    {
+        if (animator == null)
+            return;
+
+        animator.SetBool(
+            "isRunning",
+            IsRunning
+        );
+
+        animator.SetBool(
+            "isJumping",
+            IsJumping
+        );
+    }
+    private void UpdateSpriteFlip()
+    {
+        if (spriteRenderer == null)
+            return;
+
+        spriteRenderer.flipX = FacingLeft;
+    }
+
 
     private void OnDrawGizmosSelected()
     {
