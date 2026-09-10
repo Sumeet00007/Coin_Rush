@@ -17,18 +17,33 @@ public class PlayerSpawner : MonoBehaviour
 
     private async void Start()
     {
+        ScreenOrientationManager.SetLandscape();
+
         runner = NetworkManager.Instance.GetRunner();
 
         if (runner == null)
         {
-            Debug.LogError("PlayerSpawner: NetworkRunner not found.");
+            Debug.LogError(
+                "PlayerSpawner: NetworkRunner not found."
+            );
+
             return;
         }
 
-        // Only Host / State Authority spawns network objects.
+        Debug.Log(
+            $"PlayerSpawner started. " +
+            $"IsServer={runner.IsServer}, " +
+            $"IsSceneAuthority={runner.IsSceneAuthority}"
+        );
+
+        // Only Server/Host should spawn network objects.
         if (!runner.IsServer)
         {
-            Debug.Log("PlayerSpawner: Client does not spawn players.");
+            Debug.Log(
+                "PlayerSpawner: Local player is not Server. " +
+                "Waiting for network-spawned players."
+            );
+
             return;
         }
 
@@ -38,6 +53,9 @@ public class PlayerSpawner : MonoBehaviour
     private async System.Threading.Tasks.Task SpawnPlayers()
     {
         if (playersSpawned)
+            return;
+
+        if (runner == null)
             return;
 
         PlayerRef player1 = PlayerRef.None;
@@ -59,10 +77,14 @@ public class PlayerSpawner : MonoBehaviour
             playerCount++;
         }
 
+        Debug.Log(
+            $"PlayerSpawner: Active player count = {playerCount}"
+        );
+
         if (playerCount < 2)
         {
             Debug.LogError(
-                $"PlayerSpawner: Expected 2 players, but found {playerCount}."
+                $"PlayerSpawner: Expected 2 players, found {playerCount}."
             );
 
             return;
@@ -71,56 +93,67 @@ public class PlayerSpawner : MonoBehaviour
         playersSpawned = true;
 
         Debug.Log(
-            $"PlayerSpawner: Spawning Player 1 ({player1}) and Player 2 ({player2})."
+            $"PlayerSpawner: " +
+            $"Player1={player1}, " +
+            $"Player2={player2}"
         );
 
-        // -----------------------------------------
-        // Spawn Player 1
-        // -----------------------------------------
+        // =====================================================
+        // PLAYER 1
+        // =====================================================
 
-        NetworkObject spawnedPlayer1 = await runner.SpawnAsync(
-            player1Prefab,
-            player1SpawnPoint.position,
-            player1SpawnPoint.rotation,
-            player1
-        );
+        NetworkObject spawnedPlayer1 =
+            await runner.SpawnAsync(
+                player1Prefab,
+                player1SpawnPoint.position,
+                player1SpawnPoint.rotation,
+                player1
+            );
 
         if (spawnedPlayer1 == null)
         {
-            Debug.LogError("Failed to spawn Player 1.");
+            Debug.LogError(
+                "PlayerSpawner: Failed to spawn Player 1."
+            );
 
             playersSpawned = false;
+
             return;
         }
 
         Debug.Log(
-            $"Player 1 spawned successfully. Owner: {player1}"
+            $"PlayerSpawner: Player 1 spawned. " +
+            $"Input Authority = {player1}"
         );
 
-        // -----------------------------------------
-        // Spawn Player 2
-        // -----------------------------------------
+        // =====================================================
+        // PLAYER 2
+        // =====================================================
 
-        NetworkObject spawnedPlayer2 = await runner.SpawnAsync(
-            player2Prefab,
-            player2SpawnPoint.position,
-            player2SpawnPoint.rotation,
-            player2
-        );
+        NetworkObject spawnedPlayer2 =
+            await runner.SpawnAsync(
+                player2Prefab,
+                player2SpawnPoint.position,
+                player2SpawnPoint.rotation,
+                player2
+            );
 
         if (spawnedPlayer2 == null)
         {
-            Debug.LogError("Failed to spawn Player 2.");
+            Debug.LogError(
+                "PlayerSpawner: Failed to spawn Player 2."
+            );
 
             playersSpawned = false;
+
             return;
         }
 
-        Debug.Log(
-            $"Player 2 spawned successfully. Owner: {player2}"
+        Debug.Log($"PlayerSpawner: Player 2 spawned. " + $"Input Authority = {player2}"
         );
 
-        Debug.Log("PlayerSpawner: Both players spawned successfully.");
+        Debug.Log(
+            "PlayerSpawner: Both players spawned successfully."
+        );
     }
 }
-

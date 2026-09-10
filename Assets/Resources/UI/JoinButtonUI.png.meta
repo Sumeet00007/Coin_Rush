@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 386c132e8bda4314c9f0f968debb2ad5
+guid: e881b0303cd21ef4ca31cf51b43168fd
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -6077969853942192846
-    second: ChatGPT Image Sep 10, 2026, 11_10_23 AM_0
+      213: -3654302138896028555
+    second: JoinButtonUI_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -72,10 +72,10 @@ TextureImporter:
   platformSettings:
   - serializedVersion: 4
     buildTarget: DefaultTexturePlatform
-    maxTextureSize: 2048
+    maxTextureSize: 1024
     resizeAlgorithm: 0
     textureFormat: -1
-    textureCompression: 1
+    textureCompression: 2
     compressionQuality: 50
     crunchedCompression: 0
     allowsAlphaSplitting: 0
@@ -98,14 +98,14 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   - serializedVersion: 4
     buildTarget: Android
-    maxTextureSize: 2048
+    maxTextureSize: 1024
     resizeAlgorithm: 0
-    textureFormat: -1
+    textureFormat: 50
     textureCompression: 1
-    compressionQuality: 50
+    compressionQuality: 100
     crunchedCompression: 0
     allowsAlphaSplitting: 0
-    overridden: 0
+    overridden: 1
     ignorePlatformSupport: 0
     androidETC2FallbackOverride: 0
     forceMaximumCompressionQuality_BC6H_BC7: 0
@@ -113,13 +113,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ChatGPT Image Sep 10, 2026, 11_10_23 AM_0
+      name: JoinButtonUI_0
       rect:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1870
-        height: 841
+        x: 18
+        y: 25
+        width: 2137
+        height: 663
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -128,8 +128,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2352e3cce96b6aba0800000000000000
-      internalID: -6077969853942192846
+      spriteID: 57ce625e09f494dc0800000000000000
+      internalID: -3654302138896028555
       vertices: []
       indices: 
       edges: []
@@ -138,7 +138,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: 5e97eb03825dee720800000000000000
     internalID: 0
     vertices: []
     indices: 
@@ -148,7 +148,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ChatGPT Image Sep 10, 2026, 11_10_23 AM_0: -6077969853942192846
+      JoinButtonUI_0: -3654302138896028555
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
