@@ -5,50 +5,90 @@ using UnityEngine;
 [RequireComponent(typeof(Collider2D))]
 public class Coin : NetworkBehaviour
 {
-    private CoinSpawner coinSpawner;
     private Collider2D coinCollider;
     private SpriteRenderer spriteRenderer;
 
-    private bool isInitialized;
+
+    // ============================================================
+    // AWAKE
+    // ============================================================
 
     private void Awake()
     {
-        coinCollider = GetComponent<Collider2D>();
-        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
-        coinCollider.isTrigger = true;
-    }
+        coinCollider =
+            GetComponent<Collider2D>();
 
+        spriteRenderer =
+            GetComponentInChildren<SpriteRenderer>();
 
-    public void Initialize(CoinSpawner spawner)
-    {
-        coinSpawner = spawner;
-        isInitialized = true;
-    }
-
-    private void OnTriggerEnter2D(Collider2D other)
-    {
-        if (!HasStateAuthority)  return;
-
-        if (!isInitialized) return;
-
-        if (!other.CompareTag("Player")) return;
-
-        if (coinSpawner != null)
+        if (coinCollider != null)
         {
-            coinSpawner.CollectCoin();
+            coinCollider.isTrigger = true;
         }
     }
 
-    public void SetActiveState(bool active)
+
+    // ============================================================
+    // PLAYER COLLECTS COIN
+    // ============================================================
+
+    private void OnTriggerEnter2D(
+        Collider2D other)
+    {
+        // --------------------------------------------------------
+        // ONLY State Authority handles collection.
+        // --------------------------------------------------------
+
+        if (!HasStateAuthority)
+            return;
+
+        // --------------------------------------------------------
+        // Existing Player tag.
+        // --------------------------------------------------------
+
+        if (!other.CompareTag("Player"))
+            return;
+
+        // --------------------------------------------------------
+        // Find CoinSpawner in the scene.
+        //
+        // This happens only when the coin is collected, so this
+        // is not part of the normal per-frame path.
+        // --------------------------------------------------------
+
+        CoinSpawner spawner =
+            FindFirstObjectByType<CoinSpawner>();
+
+        if (spawner == null)
+        {
+            Debug.LogError(
+                "Coin: CoinSpawner not found."
+            );
+
+            return;
+        }
+
+        spawner.CollectCoin();
+    }
+
+
+    // ============================================================
+    // ENABLE / DISABLE
+    // ============================================================
+
+    public void SetActiveState(
+        bool active)
     {
         if (coinCollider != null)
         {
-            coinCollider.enabled = active;
+            coinCollider.enabled =
+                active;
         }
 
         if (spriteRenderer != null)
         {
-            spriteRenderer.enabled = active;
+            spriteRenderer.enabled =
+                active;
         }
     }
 }

@@ -3,7 +3,7 @@ using UnityEngine;
 
 public class CoinSpawner : NetworkBehaviour
 {
-    [Header("Coin")]
+    [Header("Coin Prefab")]
     [SerializeField] private NetworkObject coinPrefab;
 
     [Header("Possible Coin Spawn Locations")]
@@ -12,56 +12,96 @@ public class CoinSpawner : NetworkBehaviour
     [Header("Settings")]
     [SerializeField] private bool preventSamePosition = true;
 
+    // ============================================================
+    // NETWORKED STATE
+    // ============================================================
+
+    // -1 means no position has been selected yet.
     [Networked]
-    private NetworkObject CoinObject { get; set; }
+    private int SpawnPointIndex { get; set; } = -1;
 
     [Networked]
     private NetworkBool CoinActive { get; set; }
 
-    
-    private bool spawnStarted;
-    private Coin coin;
-    private int lastSpawnIndex = -1;
+    // Reference to the ONE coin NetworkObject.
+    private NetworkObject coinObject;
 
+    private bool hasSpawnedCoin;
+
+    private int lastSpawnPointIndex = -1;
+
+
+    // ============================================================
+    // SPAWNED
+    // ============================================================
 
     public override void Spawned()
     {
-        // Only State Authority creates the networked coin.
+        // --------------------------------------------------------
+        // VERY IMPORTANT:
+        //
+        // Only State Authority creates the coin.
+        //
+        // In Host/Client mode:
+        // Host = State Authority
+        // Client = Proxy
+        // --------------------------------------------------------
+
         if (!HasStateAuthority)
             return;
 
-        SpawnInitialCoin();
-    }
+        if (spawnPoints == null ||
+            spawnPoints.Length == 0)
+        {
+            Debug.LogError(
+                "CoinSpawner: No spawn points assigned."
+            );
 
-
-    private async void SpawnInitialCoin()
-    {
-        if (spawnStarted) return;
-
-        spawnStarted = true;
+            return;
+        }
 
         if (coinPrefab == null)
         {
-            Debug.LogError("CoinSpawner: Coin Prefab is not assigned.");
-            spawnStarted = false;
+            Debug.LogError(
+                "CoinSpawner: Coin prefab is not assigned."
+            );
+
             return;
         }
 
-        if (spawnPoints == null || spawnPoints.Length == 0)
-        {
-            Debug.LogError("CoinSpawner: No spawn points assigned.");
-            spawnStarted = false;
+        SpawnCoin();
+    }
+
+
+    // ============================================================
+    // INITIAL COIN SPAWN
+    // ============================================================
+
+    private async void SpawnCoin()
+    {
+        if (hasSpawnedCoin)
             return;
-        }
 
-        int spawnIndex = GetRandomSpawnIndex();
+        hasSpawnedCoin = true;
 
-        Transform spawnPoint = spawnPoints[spawnIndex];
+        // --------------------------------------------------------
+        // Select random position ONLY on State Authority.
+        // --------------------------------------------------------
 
-        lastSpawnIndex = spawnIndex;
+        int index =
+            GetRandomSpawnPointIndex();
 
-        NetworkObject spawnedCoin = await Runner.SpawnAsync
-            (
+        lastSpawnPointIndex = index;
+
+        Transform spawnPoint =
+            spawnPoints[index];
+
+        // --------------------------------------------------------
+        // Spawn exactly ONE coin.
+        // --------------------------------------------------------
+
+        NetworkObject spawnedCoin =
+            await Runner.SpawnAsync(
                 coinPrefab,
                 spawnPoint.position,
                 spawnPoint.rotation,
@@ -70,63 +110,80 @@ public class CoinSpawner : NetworkBehaviour
 
         if (spawnedCoin == null)
         {
-            Debug.LogError("CoinSpawner: Failed to spawn coin.");
-            spawnStarted = false;
+            Debug.LogError(
+                "CoinSpawner: Failed to spawn coin."
+            );
+
+            hasSpawnedCoin = false;
+
             return;
         }
 
-        CoinObject = spawnedCoin;
+        coinObject = spawnedCoin;
 
-        coin = spawnedCoin.GetComponent<Coin>();
+        // --------------------------------------------------------
+        // IMPORTANT:
+        //
+        // This is the value that gets synchronized to the Client.
+        // --------------------------------------------------------
 
-        if (coin == null)
-        {
-            Debug.LogError("CoinSpawner: Coin prefab requires a Coin component.");
-            return;
-        }
+        SpawnPointIndex = index;
 
-        // Give the coin a reference to this spawner.
-        coin.Initialize(this);
         CoinActive = true;
+
         ApplyCoinState();
     }
 
 
-    
+    // ============================================================
+    // COIN COLLECTED
+    // ============================================================
 
     public void CollectCoin()
     {
         // --------------------------------------------------------
-        // IMPORTANT:
-        // Only State Authority changes the network state.
+        // ONLY State Authority is allowed to change game state.
         // --------------------------------------------------------
 
-        if (!HasStateAuthority) return;
+        if (!HasStateAuthority)
+            return;
 
-        if (!CoinActive)  return;
+        if (!CoinActive)
+            return;
 
-        if (CoinObject == null)  return;
-        
-        CoinActive = false;
-        ApplyCoinState();
+        if (coinObject == null)
+            return;
 
-        SpawnCoinAtRandomPosition();
-    }
+        // --------------------------------------------------------
+        // Select another position.
+        // --------------------------------------------------------
 
-    private void SpawnCoinAtRandomPosition()
-    {
-        if (CoinObject == null) return;
+        int newIndex =
+            GetRandomSpawnPointIndex();
 
-        int spawnIndex = GetRandomSpawnIndex();
+        lastSpawnPointIndex = newIndex;
 
-        Transform spawnPoint = spawnPoints[spawnIndex];
+        // --------------------------------------------------------
+        // Update the NETWORKED spawn index FIRST.
+        // --------------------------------------------------------
 
-        lastSpawnIndex = spawnIndex;
+        SpawnPointIndex = newIndex;
 
-        CoinObject.transform.SetPositionAndRotation(
-            spawnPoint.position,
-            spawnPoint.rotation
+        // --------------------------------------------------------
+        // Move the existing coin.
+        // --------------------------------------------------------
+
+        Transform newSpawnPoint =
+            spawnPoints[newIndex];
+
+        coinObject.transform.SetPositionAndRotation(
+            newSpawnPoint.position,
+            newSpawnPoint.rotation
         );
+
+        // --------------------------------------------------------
+        // Make coin available again.
+        // --------------------------------------------------------
 
         CoinActive = true;
 
@@ -135,48 +192,141 @@ public class CoinSpawner : NetworkBehaviour
 
 
     // ============================================================
-    // RANDOM SPAWN POINT
+    // RANDOM POSITION
     // ============================================================
 
-    private int GetRandomSpawnIndex()
+    private int GetRandomSpawnPointIndex()
     {
-        int count =  spawnPoints.Length;
+        int count =
+            spawnPoints.Length;
 
-     
-        if (count == 1) return 0;
+        if (count <= 1)
+            return 0;
 
         int index;
 
-        do
+        if (!preventSamePosition)
         {
-            index = Random.Range(0, count);
-
+            return Random.Range(
+                0,
+                count
+            );
         }
 
-        while
-        (
-            preventSamePosition && index == lastSpawnIndex
-        );
+        do
+        {
+            index =
+                Random.Range(
+                    0,
+                    count
+                );
+
+        } while (index == lastSpawnPointIndex);
 
         return index;
     }
 
 
-    private void ApplyCoinState()
+    // ============================================================
+    // NETWORK STATE CHANGE
+    // ============================================================
+
+    public override void Render()
     {
-        if (CoinObject == null)
+        // --------------------------------------------------------
+        // Client receives SpawnPointIndex from Host.
+        //
+        // Make sure the coin is positioned according to the
+        // synchronized value.
+        // --------------------------------------------------------
+
+        if (coinObject == null)
+        {
+            FindCoinObject();
+        }
+
+        if (coinObject == null)
             return;
 
-        Coin coinComponent = coin != null? coin: CoinObject.GetComponent<Coin>();
-
-        if (coinComponent != null)
+        if (SpawnPointIndex < 0 ||
+            SpawnPointIndex >= spawnPoints.Length)
         {
-            coinComponent.SetActiveState(CoinActive);
+            return;
+        }
+
+        Transform spawnPoint =
+            spawnPoints[SpawnPointIndex];
+
+        // --------------------------------------------------------
+        // Do NOT generate a random number here.
+        //
+        // The Client MUST use the Host's synchronized index.
+        // --------------------------------------------------------
+
+        coinObject.transform.SetPositionAndRotation(
+            spawnPoint.position,
+            spawnPoint.rotation
+        );
+
+        ApplyCoinState();
+    }
+
+
+    // ============================================================
+    // FIND COIN
+    // ============================================================
+
+    private void FindCoinObject()
+    {
+        // --------------------------------------------------------
+        // Search only until we find the one spawned coin.
+        //
+        // This normally happens only during initialization.
+        // --------------------------------------------------------
+
+        Coin[] coins =
+            FindObjectsByType<Coin>(
+                FindObjectsSortMode.None
+            );
+
+        for (int i = 0; i < coins.Length; i++)
+        {
+            if (coins[i] == null)
+                continue;
+
+            NetworkObject networkObject =
+                coins[i].GetComponent<NetworkObject>();
+
+            if (networkObject == null)
+                continue;
+
+            coinObject =
+                networkObject;
+
+            return;
         }
     }
 
-    public bool IsCoinActive()
+
+    // ============================================================
+    // APPLY COIN ACTIVE STATE
+    // ============================================================
+
+    private void ApplyCoinState()
     {
-        return CoinActive;
+        if (coinObject == null)
+            return;
+
+        Coin coin =
+            coinObject.GetComponent<Coin>();
+
+        if (coin == null)
+            return;
+
+        coin.SetActiveState(
+            CoinActive
+        );
     }
+
+
 }
