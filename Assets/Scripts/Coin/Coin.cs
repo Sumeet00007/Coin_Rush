@@ -8,18 +8,11 @@ public class Coin : NetworkBehaviour
     private Collider2D coinCollider;
     private SpriteRenderer spriteRenderer;
 
-
-    // ============================================================
-    // AWAKE
-    // ============================================================
-
     private void Awake()
     {
-        coinCollider =
-            GetComponent<Collider2D>();
+        coinCollider = GetComponent<Collider2D>();
 
-        spriteRenderer =
-            GetComponentInChildren<SpriteRenderer>();
+        spriteRenderer = GetComponentInChildren<SpriteRenderer>();
 
         if (coinCollider != null)
         {
@@ -27,44 +20,35 @@ public class Coin : NetworkBehaviour
         }
     }
 
-
-    // ============================================================
-    // PLAYER COLLECTS COIN
-    // ============================================================
-
-    private void OnTriggerEnter2D(
-        Collider2D other)
+    private void OnTriggerEnter2D(Collider2D other)
     {
-        // --------------------------------------------------------
-        // ONLY State Authority handles collection.
-        // --------------------------------------------------------
 
         if (!HasStateAuthority)
             return;
 
-        // --------------------------------------------------------
-        // Existing Player tag.
-        // --------------------------------------------------------
-
         if (!other.CompareTag("Player"))
             return;
 
-        // --------------------------------------------------------
-        // Find CoinSpawner in the scene.
-        //
-        // This happens only when the coin is collected, so this
-        // is not part of the normal per-frame path.
-        // --------------------------------------------------------
+        NetworkObject playerObject = other.GetComponentInParent<NetworkObject>();
 
-        CoinSpawner spawner =
-            FindFirstObjectByType<CoinSpawner>();
+        if (playerObject == null)
+        {
+            Debug.LogWarning("Coin: Player NetworkObject not found." );
+            return;
+        }
+
+        PlayerRef collectingPlayer = playerObject.InputAuthority;
+
+        if (ScoreManager.Instance != null)
+        {
+            ScoreManager.Instance.AddCoin(collectingPlayer);
+        }
+
+        CoinSpawner spawner = FindFirstObjectByType<CoinSpawner>();
 
         if (spawner == null)
         {
-            Debug.LogError(
-                "Coin: CoinSpawner not found."
-            );
-
+            Debug.LogError("Coin: CoinSpawner not found.");
             return;
         }
 
@@ -72,23 +56,16 @@ public class Coin : NetworkBehaviour
     }
 
 
-    // ============================================================
-    // ENABLE / DISABLE
-    // ============================================================
-
-    public void SetActiveState(
-        bool active)
+    public void SetActiveState(bool active)
     {
         if (coinCollider != null)
         {
-            coinCollider.enabled =
-                active;
+            coinCollider.enabled = active;
         }
 
         if (spriteRenderer != null)
         {
-            spriteRenderer.enabled =
-                active;
+            spriteRenderer.enabled = active;
         }
     }
 }

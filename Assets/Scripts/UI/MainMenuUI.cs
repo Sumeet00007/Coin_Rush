@@ -5,17 +5,12 @@ using UnityEngine.UI;
 public class MainMenuUI : MonoBehaviour
 {
     [Header("UI")]
-    [SerializeField]
-    private TMP_InputField roomCodeInput;
+    [SerializeField] private TMP_InputField roomCodeInput;
+    [SerializeField] private Button hostButton;
+    [SerializeField] private Button joinButton;
+    [SerializeField] private TMP_Text statusText;
+    [SerializeField] private Button backButton;
 
-    [SerializeField]
-    private Button hostButton;
-
-    [SerializeField]
-    private Button joinButton;
-
-    [SerializeField]
-    private TMP_Text statusText;
 
     private async void Start()
     {
@@ -31,7 +26,6 @@ public class MainMenuUI : MonoBehaviour
     private async void OnHostClicked()
     {
         SetButtonsInteractable(false);
-
         statusText.text = "Creating room...";
 
         bool success = await NetworkManager.Instance.CreateRoom();
@@ -39,7 +33,6 @@ public class MainMenuUI : MonoBehaviour
         if (!success)
         {
             statusText.text = "Failed to create room.";
-
             SetButtonsInteractable(true);
 
             return;
@@ -81,6 +74,7 @@ public class MainMenuUI : MonoBehaviour
     {
         hostButton.interactable = value;
         joinButton.interactable = value;
+        backButton.interactable = value;
         roomCodeInput.interactable = value;
     }
 }
