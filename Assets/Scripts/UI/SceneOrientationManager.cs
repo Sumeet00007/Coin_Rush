@@ -19,10 +19,7 @@ public static class ScreenOrientationManager
         Screen.orientation = ScreenOrientation.Portrait;
     }
 
-    /// <summary>
-    /// Force the application into Landscape mode.
-    /// Both landscape directions are allowed, but portrait is disabled.
-    /// </summary>
+ 
     public static void SetLandscape()
     {
         // Disable portrait autorotation.

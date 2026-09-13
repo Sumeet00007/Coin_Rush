@@ -12,38 +12,24 @@ public class PlayerSpawner : MonoBehaviour
     [SerializeField] private Transform player2SpawnPoint;
 
     private NetworkRunner runner;
-
     private bool playersSpawned;
 
     private async void Start()
     {
         ScreenOrientationManager.SetLandscape();
-
         runner = NetworkManager.Instance.GetRunner();
 
         if (runner == null)
         {
-            Debug.LogError(
-                "PlayerSpawner: NetworkRunner not found."
-            );
-
+            //Debug.LogError("PlayerSpawner: NetworkRunner not found.");
             return;
         }
 
-        Debug.Log(
-            $"PlayerSpawner started. " +
-            $"IsServer={runner.IsServer}, " +
-            $"IsSceneAuthority={runner.IsSceneAuthority}"
-        );
-
+        //Debug.Log($"PlayerSpawner started. " +$"IsServer={runner.IsServer}, " +$"IsSceneAuthority={runner.IsSceneAuthority}");
         // Only Server/Host should spawn network objects.
         if (!runner.IsServer)
         {
-            Debug.Log(
-                "PlayerSpawner: Local player is not Server. " +
-                "Waiting for network-spawned players."
-            );
-
+            //Debug.Log("PlayerSpawner: Local player is not Server. " + "Waiting for network-spawned players.");
             return;
         }
 
@@ -52,11 +38,9 @@ public class PlayerSpawner : MonoBehaviour
 
     private async System.Threading.Tasks.Task SpawnPlayers()
     {
-        if (playersSpawned)
-            return;
+        if (playersSpawned) return;
 
-        if (runner == null)
-            return;
+        if (runner == null) return;
 
         PlayerRef player1 = PlayerRef.None;
         PlayerRef player2 = PlayerRef.None;
@@ -77,31 +61,18 @@ public class PlayerSpawner : MonoBehaviour
             playerCount++;
         }
 
-        Debug.Log(
-            $"PlayerSpawner: Active player count = {playerCount}"
-        );
+        //Debug.Log($"PlayerSpawner: Active player count = {playerCount}");
 
         if (playerCount < 2)
         {
-            Debug.LogError(
-                $"PlayerSpawner: Expected 2 players, found {playerCount}."
-            );
-
+            //Debug.LogError($"PlayerSpawner: Expected 2 players, found {playerCount}.");
             return;
         }
 
         playersSpawned = true;
 
-        Debug.Log(
-            $"PlayerSpawner: " +
-            $"Player1={player1}, " +
-            $"Player2={player2}"
-        );
-
-        // =====================================================
-        // PLAYER 1
-        // =====================================================
-
+        //Debug.Log($"PlayerSpawner: " +$"Player1={player1}, " +$"Player2={player2}");
+        
         NetworkObject spawnedPlayer1 =
             await runner.SpawnAsync(
                 player1Prefab,
@@ -112,23 +83,12 @@ public class PlayerSpawner : MonoBehaviour
 
         if (spawnedPlayer1 == null)
         {
-            Debug.LogError(
-                "PlayerSpawner: Failed to spawn Player 1."
-            );
-
+            Debug.LogError("PlayerSpawner: Failed to spawn Player 1.");
             playersSpawned = false;
-
             return;
         }
 
-        Debug.Log(
-            $"PlayerSpawner: Player 1 spawned. " +
-            $"Input Authority = {player1}"
-        );
-
-        // =====================================================
-        // PLAYER 2
-        // =====================================================
+        //Debug.Log($"PlayerSpawner: Player 1 spawned. " +$"Input Authority = {player1}");
 
         NetworkObject spawnedPlayer2 =
             await runner.SpawnAsync(
@@ -140,20 +100,12 @@ public class PlayerSpawner : MonoBehaviour
 
         if (spawnedPlayer2 == null)
         {
-            Debug.LogError(
-                "PlayerSpawner: Failed to spawn Player 2."
-            );
-
+            //Debug.LogError("PlayerSpawner: Failed to spawn Player 2.");
             playersSpawned = false;
-
             return;
         }
 
-        Debug.Log($"PlayerSpawner: Player 2 spawned. " + $"Input Authority = {player2}"
-        );
-
-        Debug.Log(
-            "PlayerSpawner: Both players spawned successfully."
-        );
+        //Debug.Log($"PlayerSpawner: Player 2 spawned. " + $"Input Authority = {player2}");
+        //Debug.Log("PlayerSpawner: Both players spawned successfully.");
     }
 }

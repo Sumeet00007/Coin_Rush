@@ -14,7 +14,6 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
     [Header("Player UI")]
     [SerializeField] private GameObject player1Panel;
     [SerializeField] private GameObject player2Panel;
-
     [SerializeField] private TMP_Text player1Text;
     [SerializeField] private TMP_Text player2Text;
 
@@ -27,18 +26,12 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
     private bool isPlayer1Joined;
     private bool isPlayer2Joined;
 
-    // Unique key for "Start Match" request.
-    private static readonly ReliableKey StartMatchKey =
-        ReliableKey.FromInts(100, 200, 300, 400);
-
-    // Prevent multiple start requests.
+    private static readonly ReliableKey StartMatchKey = ReliableKey.FromInts(100, 200, 300, 400);
     private bool matchStarting;
 
     private void Start()
     {
-        // Force Lobby to Landscape.
         ScreenOrientationManager.SetLandscape();
-
         runner = NetworkManager.Instance.GetRunner();
 
         if (runner == null)
@@ -47,18 +40,15 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
             return;
         }
 
-        // Register Fusion callbacks.
         runner.AddCallbacks(this);
-
-        // Initially hide player slots.
+      
         player1Panel.SetActive(false);
         player2Panel.SetActive(false);
-
-        // Disabled until both players are present.
+      
         enterMatchButton.interactable = false;
 
         // Display room code.
-        joinCodeText.text = $"{NetworkManager.Instance.RoomCode}";
+        joinCodeText.text = $"{NetworkManager.Instance.roomCode}";
 
         // Update current players.
         UpdateLobbyUI();
@@ -66,17 +56,14 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
 
     private void UpdateLobbyUI()
     {
-        if (runner == null)
-            return;
+        if (runner == null) return;
 
         var players = runner.ActivePlayers.ToList();
-
         int playerCount = players.Count;
 
         isPlayer1Joined = playerCount >= 1;
         isPlayer2Joined = playerCount >= 2;
-
-        Debug.Log($"Players in lobby: {playerCount}");
+        //Debug.Log($"Players in lobby: {playerCount}");
 
         // Reset UI.
         player1Panel.SetActive(false);
@@ -99,155 +86,87 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
         // Lobby status.
         if (!isPlayer2Joined)
         {
-            lobbyStatusText.text =
-                "Waiting for Player 2...";
+            lobbyStatusText.text = "Waiting for Player 2...";
         }
         else
         {
-            lobbyStatusText.text =
-                "Both players are ready!";
+            lobbyStatusText.text = "Both players are ready!";
         }
 
         // Both players can click the button.
-        enterMatchButton.interactable =
-            isPlayer1Joined &&
-            isPlayer2Joined &&
-            !matchStarting;
+        enterMatchButton.interactable = isPlayer1Joined && isPlayer2Joined && !matchStarting;
     }
 
-    // =========================================================
-    // PLAYER JOIN / LEAVE
-    // =========================================================
-
-    public void OnPlayerJoined(
-        NetworkRunner runner,
-        PlayerRef player)
+    public void OnPlayerJoined(NetworkRunner runner, PlayerRef player)
     {
-        Debug.Log(
-            $"Player joined lobby: {player}"
-        );
-
+        //Debug.Log($"Player joined lobby: {player}");
         UpdateLobbyUI();
     }
 
-    public void OnPlayerLeft(
-        NetworkRunner runner,
-        PlayerRef player)
+    public void OnPlayerLeft(NetworkRunner runner,PlayerRef player)
     {
-        Debug.Log(
-            $"Player left lobby: {player}"
-        );
-
+        //Debug.Log($"Player left lobby: {player}");
         matchStarting = false;
-
         UpdateLobbyUI();
     }
-
-    // =========================================================
-    // START MATCH BUTTON
-    // =========================================================
 
     public void OnEnterMatchClicked()
     {
-        if (runner == null)
-            return;
+        if (runner == null) return;
 
         if (matchStarting)
         {
-            Debug.Log(
-                "Match is already starting."
-            );
-
+            //Debug.Log("Match is already starting.");
             return;
         }
 
         if (!isPlayer1Joined || !isPlayer2Joined)
         {
-            Debug.Log(
-                "Cannot start match. Both players must be joined."
-            );
-
+            //Debug.Log("Cannot start match. Both players must be joined.");
             return;
         }
 
         if (runner.ActivePlayers.Count() < 2)
         {
-            Debug.Log(
-                "Cannot start match. Need 2 players."
-            );
-
+            //Debug.Log("Cannot start match. Need 2 players.");
             return;
         }
 
-        Debug.Log(
-            $"Start Match clicked by {runner.LocalPlayer}"
-        );
+        //Debug.Log($"Start Match clicked by {runner.LocalPlayer}");
 
         matchStarting = true;
-
         enterMatchButton.interactable = false;
-
         lobbyStatusText.text = "Starting match...";
 
-        // -----------------------------------------------------
         // CASE 1:
         // Local player IS Scene Authority.
-        // -----------------------------------------------------
-
         if (runner.IsSceneAuthority)
         {
-            Debug.Log(
-                "Local player is Scene Authority. Starting match directly."
-            );
-
+            //Debug.Log("Local player is Scene Authority. Starting match directly.");
             StartMatch();
             return;
         }
 
-        // -----------------------------------------------------
         // CASE 2:
         // Local player is NOT Scene Authority.
-        //
         // Send request to Scene Authority.
-        // -----------------------------------------------------
 
-        Debug.Log(
-            "Local player is not Scene Authority."
-        );
-
-        Debug.Log(
-            "Sending Start Match request to Scene Authority..."
-        );
+        //Debug.Log("Local player is not Scene Authority.");
+        //Debug.Log("Sending Start Match request to Scene Authority...");
 
         SendStartMatchRequest();
     }
 
-    // =========================================================
-    // SEND START MATCH REQUEST
-    // =========================================================
-
     private void SendStartMatchRequest()
     {
-        if (runner == null)
-            return;
-
+        if (runner == null) return;
         // Small payload.
         byte[] requestData = new byte[] { 1 };
 
-        runner.SendReliableDataToServer(
-            StartMatchKey,
-            requestData
-        );
-
-        Debug.Log(
-            "Start Match request sent to server."
-        );
+        runner.SendReliableDataToServer(StartMatchKey, requestData);
+        //Debug.Log("Start Match request sent to server.");
     }
-
-    // =========================================================
-    // RECEIVE START MATCH REQUEST
-    // =========================================================
-
+   
     public void OnReliableDataReceived(
         NetworkRunner runner,
         PlayerRef player,
@@ -258,67 +177,44 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
         if (key != StartMatchKey)
             return;
 
-        Debug.Log(
-            $"Reliable data received from {player}."
-        );
+        //Debug.Log($"Reliable data received from {player}.");
 
         // Only Scene Authority is allowed to start the scene.
         if (!runner.IsSceneAuthority)
         {
-            Debug.Log(
-                "Received Start Match request, but local player is not Scene Authority."
-            );
-
+            //Debug.Log("Received Start Match request, but local player is not Scene Authority.");
             return;
         }
 
         // Validate request.
         if (data.Length == 0 || data[0] != 1)
         {
-            Debug.LogWarning(
-                "Invalid Start Match request."
-            );
-
+            //Debug.LogWarning("Invalid Start Match request.");
             return;
         }
 
-        Debug.Log(
-            $"Start Match request received from {player}. Starting match..."
-        );
+        //Debug.Log($"Start Match request received from {player}. Starting match...");
 
         StartMatch();
     }
 
-    // =========================================================
-    // ACTUALLY START MATCH
-    // =========================================================
-
     private void StartMatch()
     {
-        if (runner == null)
-            return;
+        if (runner == null)  return;
 
         // Only Scene Authority may load networked scene.
         if (!runner.IsSceneAuthority)
         {
-            Debug.LogWarning(
-                "StartMatch called on a non-authority player."
-            );
-
+            //Debug.LogWarning("StartMatch called on a non-authority player.");
             return;
         }
 
         // Make sure both players still exist.
         if (runner.ActivePlayers.Count() < 2)
         {
-            Debug.LogWarning(
-                "Cannot start match. Both players are required."
-            );
-
+            Debug.LogWarning("Cannot start match. Both players are required.");
             matchStarting = false;
-
             UpdateLobbyUI();
-
             return;
         }
 
@@ -327,48 +223,23 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
             matchStarting = true;
         }
 
-        Debug.Log(
-            "Scene Authority is loading Game Scene..."
-        );
-
+        //Debug.Log("Scene Authority is loading Game Scene...");
         lobbyStatusText.text = "Starting match...";
-
-        SceneRef matchScene =
-            SceneRef.FromIndex(2);
-
-        runner.LoadScene(
-            matchScene,
-            UnityEngine.SceneManagement.LoadSceneMode.Single
-        );
+        SceneRef matchScene = SceneRef.FromIndex(2);
+        runner.LoadScene(matchScene,UnityEngine.SceneManagement.LoadSceneMode.Single);
     }
 
-    // =========================================================
-    // SCENE LOAD CALLBACKS
-    // =========================================================
-
-    public void OnSceneLoadStart(
-        NetworkRunner runner)
+    public void OnSceneLoadStart(NetworkRunner runner)
     {
-        Debug.Log(
-            "Fusion: Game scene loading started."
-        );
+        //Debug.Log("Fusion: Game scene loading started.");
     }
 
-    public void OnSceneLoadDone(
-        NetworkRunner runner)
+    public void OnSceneLoadDone(NetworkRunner runner)
     {
-        Debug.Log(
-            "Fusion: Game scene loaded for this player."
-        );
+        //Debug.Log("Fusion: Game scene loaded for this player.");
     }
 
-    // =========================================================
-    // OTHER REQUIRED FUSION CALLBACKS
-    // =========================================================
-
-    public void OnInput(
-        NetworkRunner runner,
-        NetworkInput input)
+    public void OnInput(NetworkRunner runner, NetworkInput input)
     {
     }
 
@@ -379,20 +250,15 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
     {
     }
 
-    public void OnShutdown(
-        NetworkRunner runner,
-        ShutdownReason shutdownReason)
+    public void OnShutdown(NetworkRunner runner,ShutdownReason shutdownReason)
     {
     }
 
-    public void OnConnectedToServer(
-        NetworkRunner runner)
+    public void OnConnectedToServer(NetworkRunner runner)
     {
     }
 
-    public void OnDisconnectedFromServer(
-        NetworkRunner runner,
-        NetDisconnectReason reason)
+    public void OnDisconnectedFromServer(NetworkRunner runner,NetDisconnectReason reason)
     {
     }
 
@@ -410,9 +276,7 @@ public class LobbyManager : MonoBehaviour, INetworkRunnerCallbacks
     {
     }
 
-    public void OnUserSimulationMessage(
-        NetworkRunner runner,
-        SimulationMessagePtr message)
+    public void OnUserSimulationMessage(NetworkRunner runner,SimulationMessagePtr message)
     {
     }
 

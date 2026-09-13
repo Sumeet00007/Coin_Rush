@@ -22,12 +22,9 @@ public class Coin : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
+        if (!HasStateAuthority)  return;
 
-        if (!HasStateAuthority)
-            return;
-
-        if (!other.CompareTag("Player"))
-            return;
+        if (!other.CompareTag("Player")) return;
 
         NetworkObject playerObject = other.GetComponentInParent<NetworkObject>();
 

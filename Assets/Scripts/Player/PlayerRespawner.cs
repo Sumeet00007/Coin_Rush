@@ -12,40 +12,27 @@ public class PlayerRespawner : NetworkBehaviour
 
     private void OnTriggerEnter2D(Collider2D other)
     {
-        // ---------------------------------------------------------
         // Only State Authority handles the respawn.
         // This prevents Host and Client from independently
-        // teleporting the same player.
-        // ---------------------------------------------------------
-
         if (!HasStateAuthority)
             return;
 
-      
-
-        if (!other.CompareTag("Player"))
-            return;
+        if (!other.CompareTag("Player")) return;
 
         NetworkObject playerObject =  other.GetComponentInParent<NetworkObject>();
 
         if (playerObject == null)
         {
-            Debug.LogWarning("PlayerRespawner: Player has no NetworkObject.");
-
+           // Debug.LogWarning("PlayerRespawner: Player has no NetworkObject.");
             return;
         }
 
         PlayerRef playerRef = playerObject.InputAuthority;
-
-       // Debug.Log( $"PlayerRespawner: Player {playerRef} entered pit.");
-
-       
-
         Transform respawnPoint = GetRespawnPoint(playerRef);
 
         if (respawnPoint == null)
         {
-            Debug.LogError($"PlayerRespawner: No respawn point found for {playerRef}.");
+            //Debug.LogError($"PlayerRespawner: No respawn point found for {playerRef}.");
             return;
         }
 
@@ -56,7 +43,7 @@ public class PlayerRespawner : NetworkBehaviour
     {
         if (player1RespawnPoint == null || player2RespawnPoint == null)
         {
-            Debug.LogError("PlayerRespawner: Respawn points are not assigned.");
+           // Debug.LogError("PlayerRespawner: Respawn points are not assigned.");
             return null;
         }
 
@@ -95,6 +82,6 @@ public class PlayerRespawner : NetworkBehaviour
 
         playerObject.transform.SetPositionAndRotation(respawnPoint.position,respawnPoint.rotation);
 
-        Debug.Log($"PlayerRespawner: Player {playerObject.InputAuthority} " +$"respawned at {respawnPoint.position}");
+        //Debug.Log($"PlayerRespawner: Player {playerObject.InputAuthority} " +$"respawned at {respawnPoint.position}");
     }
 }

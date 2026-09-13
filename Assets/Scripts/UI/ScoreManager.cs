@@ -7,11 +7,9 @@ public class ScoreManager : NetworkBehaviour
 {
     public static ScoreManager Instance { get; private set; }
 
-    [Header("Game Settings")]
-    [SerializeField] private float gameDuration = 60f;
-    [SerializeField] private float returnToMenuDelay = 3f;
-    [SerializeField] private string mainMenuSceneName = "MainMenu";
-
+    private float gameDuration = 60f;
+    private float returnToMenuDelay = 3f;
+    private string mainMenuSceneName = "MainMenu";
 
     [Header("UI")]
     [SerializeField] private TMP_Text player1ScoreText;
@@ -24,7 +22,6 @@ public class ScoreManager : NetworkBehaviour
     [SerializeField] private GameObject player2WinIMG;
     [SerializeField] private TMP_Text player1WinScoreText;
     [SerializeField] private TMP_Text player2WinScoreText;
-
 
     [Networked] public int Player1Score { get; private set; }
     [Networked] public int Player2Score { get; private set; }
@@ -90,27 +87,25 @@ public class ScoreManager : NetworkBehaviour
 
         if (playerIndex < 2)
         {
-            Debug.LogWarning("ScoreManager: Waiting for two players.");
-
+            //Debug.LogWarning("ScoreManager: Waiting for two players.");
             return;
         }
 
         GameTimer = TickTimer.CreateFromSeconds(Runner,gameDuration);
 
-        Debug.Log
-        (
-            $"ScoreManager initialized. " +
-            $"Player1={Player1Ref}, " +
-            $"Player2={Player2Ref}, " +
-            $"Duration={gameDuration}s"
-        );
+        //Debug.Log
+        //(
+        //    $"ScoreManager initialized. " +
+        //    $"Player1={Player1Ref}, " +
+        //    $"Player2={Player2Ref}, " +
+        //    $"Duration={gameDuration}s"
+        //);
     }
 
 
     public override void FixedUpdateNetwork()
     {
         if (!HasStateAuthority) return;
-     
         if (!GameFinished && GameTimer.Expired(Runner))
         {
             FinishGame();
@@ -120,7 +115,6 @@ public class ScoreManager : NetworkBehaviour
     public override void Render()
     {
         UpdateUI();
-
         if (GameFinished && !winUIShown)
         {
             ShowWinnerUI();
@@ -130,7 +124,6 @@ public class ScoreManager : NetworkBehaviour
     public void AddCoin(PlayerRef collectingPlayer)
     {
         if (!HasStateAuthority)  return;
-
         if (GameFinished) return;
 
         if (GameTimer.Expired(Runner))
@@ -151,14 +144,14 @@ public class ScoreManager : NetworkBehaviour
 
         else
         {
-            Debug.LogWarning($"ScoreManager: Unknown PlayerRef {collectingPlayer}");
+            //Debug.LogWarning($"ScoreManager: Unknown PlayerRef {collectingPlayer}");
             return;
         }
 
-        Debug.Log(
-            $"Coin collected by {collectingPlayer}. " +
-            $"P1={Player1Score}, P2={Player2Score}"
-        );
+        //Debug.Log(
+        //    $"Coin collected by {collectingPlayer}. " +
+        //    $"P1={Player1Score}, P2={Player2Score}"
+        //);
 
         UpdateUI();
     }
@@ -185,11 +178,11 @@ public class ScoreManager : NetworkBehaviour
 
         GameFinished = true;
 
-        Debug.Log(
-            $"Game Finished. " +
-            $"Player1={Player1Score}, " +
-            $"Player2={Player2Score}"
-        );
+        //Debug.Log(
+        //    $"Game Finished. " +
+        //    $"Player1={Player1Score}, " +
+        //    $"Player2={Player2Score}"
+        //);
 
         UpdateUI();
     }
@@ -198,7 +191,6 @@ public class ScoreManager : NetworkBehaviour
     {
         if (winUIShown) return;
         winUIShown = true;
-
         HideWinUI();
 
         if (Winner == 1)
@@ -230,16 +222,15 @@ public class ScoreManager : NetworkBehaviour
 
         else
         {
-            Debug.Log(
-                $"GAME DRAW! " +
-                $"Both players collected {Player1Score} coins."
-            );
+            //Debug.Log(
+            //    $"GAME DRAW! " +
+            //    $"Both players collected {Player1Score} coins."
+            //);
         }
 
         if (!returnToMenuStarted)
         {
             returnToMenuStarted = true;
-
             Invoke(nameof(ReturnToMainMenu), returnToMenuDelay);
         }
     }
@@ -268,11 +259,8 @@ public class ScoreManager : NetworkBehaviour
     private float GetRemainingTime()
     {
         if (GameFinished)  return 0f;
-
         if (!GameTimer.IsRunning) return 0f;
-
         float remaining = GameTimer.RemainingTime(Runner) ?? 0f;
-
         return Mathf.Max(0f, remaining);
     }
 
@@ -292,13 +280,9 @@ public class ScoreManager : NetworkBehaviour
         if (timerText != null)
         {
             float remaining = GetRemainingTime();
-
             int totalSeconds = Mathf.CeilToInt(remaining);
-
             int minutes = totalSeconds / 60;
-
             int seconds = totalSeconds % 60;
-
             timerText.text = $"{minutes:00}:{seconds:00}";
         }
     }

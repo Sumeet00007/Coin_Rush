@@ -18,8 +18,6 @@ public class MainMenuUI : MonoBehaviour
         ScreenOrientationManager.SetPortrait();
         hostButton.onClick.AddListener(OnHostClicked);
         joinButton.onClick.AddListener(OnJoinClicked);
-
-
         statusText.text = "";
     }
 
@@ -34,7 +32,6 @@ public class MainMenuUI : MonoBehaviour
         {
             statusText.text = "Failed to create room.";
             SetButtonsInteractable(true);
-
             return;
         }
 
@@ -48,7 +45,6 @@ public class MainMenuUI : MonoBehaviour
         if (string.IsNullOrEmpty(roomCode))
         {
             statusText.text = "Enter a room code.";
-
             return;
         }
 

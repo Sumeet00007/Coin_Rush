@@ -9,6 +9,5 @@ public enum PlayerInputButton
 public struct NetworkInputData : INetworkInput
 {
     public Vector2 MoveInput;
-
     public NetworkButtons Buttons;
 }
