@@ -253,8 +253,21 @@ public class ScoreManager : NetworkBehaviour
        
         if (!returnToMenuStarted) return;
         SceneManager.LoadScene(mainMenuSceneName);
+        // Then reload MainMenu to make sure it starts completely fresh
+        SceneManager.sceneLoaded += ReloadMainMenu;
     }
 
+    private void ReloadMainMenu(Scene scene, LoadSceneMode mode)
+    {
+        if (scene.name != mainMenuSceneName)
+            return;
+
+        // Remove the callback so it doesn't remain registered
+        SceneManager.sceneLoaded -= ReloadMainMenu;
+
+        // Reload MainMenu again
+        SceneManager.LoadScene(mainMenuSceneName);
+    }
 
     private float GetRemainingTime()
     {
